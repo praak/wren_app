@@ -11,7 +11,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/cloudsdk" />
-            <option value="$PROJECT_DIR$/example_app" />
+            <option value="$PROJECT_DIR$/wren_ui" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
