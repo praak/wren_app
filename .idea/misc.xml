@@ -19,6 +19,14 @@
     <option name="pathToUserRulesConfiguration" value="" />
     <option name="pathToJarWithRules" value="" />
   </component>
+  <component name="EclipseCodeFormatter">
+    <option name="defaultSettings" value="true" />
+    <option name="formatter" value="ECLIPSE" />
+    <option name="id" value="1486737131065" />
+    <option name="name" value="default" />
+    <option name="pathToConfigFileJava" value="$PROJECT_DIR$/android-formatting.xml" />
+    <option name="selectedJavaProfile" value="Android" />
+  </component>
   <component name="EntryPointsManager">
     <entry_points version="2.0" />
   </component>

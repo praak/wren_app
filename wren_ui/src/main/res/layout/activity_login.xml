@@ -13,14 +13,13 @@
         android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Login to Particle"
         android:gravity="center"
+        android:text="Login to Particle"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-
 
 
         <TextView
@@ -36,7 +35,6 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="12dp"
             android:inputType="textEmailAddress" />
-
 
     </LinearLayout>
 
@@ -67,8 +65,8 @@
         android:id="@+id/login_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="26dp"
         android:layout_gravity="center"
+        android:layout_marginTop="26dp"
         android:text="Login" />
 
 </LinearLayout>

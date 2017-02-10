@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/cloudsdk/cloudsdk.iml" filepath="$PROJECT_DIR$/cloudsdk/cloudsdk.iml" />
       <module fileurl="file://$PROJECT_DIR$/wren.iml" filepath="$PROJECT_DIR$/wren.iml" />
-      <module fileurl="file://$PROJECT_DIR$/wren.iml" filepath="$PROJECT_DIR$/wren.iml" />
       <module fileurl="file://$PROJECT_DIR$/wren_ui/wren_ui.iml" filepath="$PROJECT_DIR$/wren_ui/wren_ui.iml" />
     </modules>
   </component>
