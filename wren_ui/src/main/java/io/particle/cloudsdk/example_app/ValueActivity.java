@@ -39,6 +39,8 @@ public class ValueActivity extends AppCompatActivity {
             "test_2",
             "test_3"
     };
+
+    List<MyTask> tasks;
     private TextView tv;
 
     public static Intent buildIntent(Context ctx, Integer value, String deviceid) {
@@ -94,7 +96,7 @@ public class ValueActivity extends AppCompatActivity {
 
                             @Override
                             public void onSuccess(List i) { // this goes on the main thread
-                                tv.setText(i.get(0).toString());
+                                // tv.setText(i.get(0).toString());
                             }
 
                             @Override
@@ -129,6 +131,7 @@ public class ValueActivity extends AppCompatActivity {
     }
 
     private void requestData(String uri) {
+        Toast.makeText(this,"Uri:"+uri,Toast.LENGTH_LONG).show();
         MyTask myTask = new MyTask();
         myTask.execute(uri);
     }
@@ -150,20 +153,27 @@ public class ValueActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             tv.setText("Before");
+
+            // tasks.add(this);
         }
 
         @Override
         protected String doInBackground(String... params) {
 
             String content = HttpManager.getData(params[0]);
+
             return content;
         }
 
         @Override
         protected void onPostExecute(String s) {
-            tv.setText(s);
+            if (s != null) {
+                tv.setText("My string" + s.substring(0, 10));
+            } else {
+                tv.setText("Null");
+            }
             Toast.makeText(getBaseContext(), "ExecutedFlowersXML", Toast.LENGTH_LONG).show();
-
+            // tasks.remove(this);
         }
     }
 
