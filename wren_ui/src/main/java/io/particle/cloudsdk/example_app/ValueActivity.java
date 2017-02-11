@@ -54,7 +54,7 @@ public class ValueActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_value);
 
-        listView = (ListView) findViewById(R.id.list_view);
+        listView = (ListView) findViewById(R.id.listview_devices);
 
         tv = (TextView) findViewById(R.id.value);
         tv.setText(String.valueOf(getIntent().getIntExtra(ARG_VALUE, 0)));
