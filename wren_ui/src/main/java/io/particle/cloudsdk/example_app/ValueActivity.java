@@ -1,3 +1,4 @@
+
 package io.particle.cloudsdk.example_app;
 
 import android.content.Context;
@@ -15,11 +16,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import io.particle.android.sdk.cloud.ParticleCloud;
 import io.particle.android.sdk.cloud.ParticleCloudException;
 import io.particle.android.sdk.cloud.ParticleCloudSDK;
+import io.particle.android.sdk.cloud.ParticleDevice;
 import io.particle.android.sdk.utils.Async;
 
 public class ValueActivity extends AppCompatActivity {
@@ -71,6 +74,13 @@ public class ValueActivity extends AppCompatActivity {
 
                         @Override
                         public void onSuccess(@NonNull List i) { // this goes on the main thread
+                            // get names, post on listview
+                            ArrayList<String> names = new ArrayList<String>();
+                            for (ParticleDevice device : (List<ParticleDevice>) i) {
+                                names.add(device.getName());
+                            }
+
+                            updateAdapter(names);
                             // tv.setText(i.get(0).toString());
                         }
 
@@ -83,15 +93,22 @@ public class ValueActivity extends AppCompatActivity {
             if (isOnline()) {
                 requestData("http://services.hanselandpetal.com/feeds/flowers.xml");
             } else {
-                Toast.makeText(getBaseContext(), "Couldn't send request, check internet connection?", Toast.LENGTH_LONG).show();
+                Toast.makeText(getBaseContext(),
+                        "Couldn't send request, check internet connection?", Toast.LENGTH_LONG)
+                        .show();
             }
         });
 
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, test_strings);
+    }
+
+    private void updateAdapter(ArrayList<String> names) {
+        Toast.makeText(this, "In update adapter" + names.toString(), Toast.LENGTH_LONG).show();
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, names);
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener((parent, view, position, id) -> Toast.makeText(getBaseContext(),
-                parent.getItemAtPosition(position) + " is selected", Toast.LENGTH_LONG)
-                .show());
+        listView.setOnItemClickListener(
+                (parent, view, position, id) -> Toast.makeText(getBaseContext(),
+                        parent.getItemAtPosition(position) + " is selected", Toast.LENGTH_LONG)
+                        .show());
     }
 
     private void requestData(String uri) {
