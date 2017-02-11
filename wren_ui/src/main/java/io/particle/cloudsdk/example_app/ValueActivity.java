@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -30,7 +31,8 @@ public class ValueActivity extends AppCompatActivity {
     private static final String TAG = "ValueActivity";
     private static final String ARG_VALUE = "ARG_VALUE";
     private static final String ARG_DEVICEID = "ARG_DEVICEID";
-
+    private static DevicesAdapter mDevicesAdapter;
+    ArrayList<ParticleDevice> mDevices;
     ListView listView;
     ArrayAdapter<String> adapter;
     String[] test_strings = {
@@ -59,36 +61,38 @@ public class ValueActivity extends AppCompatActivity {
         tv = (TextView) findViewById(R.id.value);
         tv.setText(String.valueOf(getIntent().getIntExtra(ARG_VALUE, 0)));
 
+        // ...
+        // Do network work on background thread
+        Async.executeAsync(ParticleCloudSDK.getCloud(),
+                new Async.ApiWork<ParticleCloud, List>() {
+                    @Override
+                    public List callApi(@NonNull ParticleCloud ParticleCloud)
+                            throws ParticleCloudException, IOException {
+                        return ParticleCloud.getDevices();
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull List devices) { // this goes on the main thread
+                        // get names, post on listview
+                        mDevices = (ArrayList<ParticleDevice>) devices;
+                        ArrayList<String> names = new ArrayList<String>();
+                        for (ParticleDevice device : (List<ParticleDevice>) devices) {
+                            names.add(device.getName());
+                        }
+
+                        updateAdapter(names);
+                        // tv.setText(i.get(0).toString());
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull ParticleCloudException e) {
+                        e.printStackTrace();
+                    }
+                });
+
         // Syntax replace from previous to get rid of lambda warning.
         // http://stackoverflow.com/questions/30752547/listener-can-be-replaced-with-lambda
         findViewById(R.id.refresh_button).setOnClickListener((View view) -> {
-            // ...
-            // Do network work on background thread
-            Async.executeAsync(ParticleCloudSDK.getCloud(),
-                    new Async.ApiWork<ParticleCloud, List>() {
-                        @Override
-                        public List callApi(@NonNull ParticleCloud ParticleCloud)
-                                throws ParticleCloudException, IOException {
-                            return ParticleCloud.getDevices();
-                        }
-
-                        @Override
-                        public void onSuccess(@NonNull List i) { // this goes on the main thread
-                            // get names, post on listview
-                            ArrayList<String> names = new ArrayList<String>();
-                            for (ParticleDevice device : (List<ParticleDevice>) i) {
-                                names.add(device.getName());
-                            }
-
-                            updateAdapter(names);
-                            // tv.setText(i.get(0).toString());
-                        }
-
-                        @Override
-                        public void onFailure(@NonNull ParticleCloudException e) {
-                            e.printStackTrace();
-                        }
-                    });
 
             if (isOnline()) {
                 requestData("http://services.hanselandpetal.com/feeds/flowers.xml");
@@ -102,13 +106,30 @@ public class ValueActivity extends AppCompatActivity {
     }
 
     private void updateAdapter(ArrayList<String> names) {
-        Toast.makeText(this, "In update adapter" + names.toString(), Toast.LENGTH_LONG).show();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, names);
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(
-                (parent, view, position, id) -> Toast.makeText(getBaseContext(),
-                        parent.getItemAtPosition(position) + " is selected", Toast.LENGTH_LONG)
-                        .show());
+        mDevicesAdapter = new DevicesAdapter(getApplicationContext(), mDevices);
+        listView.setAdapter(mDevicesAdapter);
+
+        listView.setOnItemClickListener((adapterView, view, position, id) -> {
+            Log.d(TAG, "Item Clicked");
+
+            Toast.makeText(ValueActivity.this, "clicked: " + position, Toast.LENGTH_LONG)
+                    .show();
+
+        });
+
+        // listView.setOnItemClickListener(
+        // (parent, view, position, id) -> Toast.makeText(getBaseContext(),
+        // parent.getItemAtPosition(position) + " is selected", Toast.LENGTH_LONG)
+        // .show());
+
+        // listView.setOnClickListener(new AdapterView.OnItemClickListener() {
+        // @Override
+        // public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        //
+        // ParticleDevice dataModel = (ParticleDevice) mDevices.get(position);
+        //
+        // }
+        // });
     }
 
     private void requestData(String uri) {
