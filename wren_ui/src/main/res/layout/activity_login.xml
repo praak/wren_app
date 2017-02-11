@@ -1,20 +1,26 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="io.particle.cloudsdk.example_app.LoginActivity">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="97dp"
+        android:layout_height="130dp"
+        android:layout_gravity="center"
+        android:adjustViewBounds="false"
+        app:srcCompat="@drawable/wren_transparent" />
 
     <TextView
         android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Login to Particle"
+        android:text="Wren Login"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <LinearLayout
@@ -22,18 +28,12 @@
         android:layout_height="wrap_content">
 
 
-        <TextView
-            android:id="@+id/email_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="email"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
-
         <EditText
             android:id="@+id/email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="12dp"
+            android:hint="email"
             android:inputType="textEmailAddress" />
 
     </LinearLayout>
@@ -43,18 +43,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/password_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="password"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
-
         <EditText
             android:id="@+id/password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="12dp"
+            android:hint="password"
             android:inputType="textPassword" />
 
 
@@ -68,6 +62,31 @@
         android:layout_gravity="center"
         android:layout_marginTop="26dp"
         android:text="Login" />
+
+    <TextView
+        android:id="@+id/textview_no_account"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:gravity="center_horizontal"
+        android:onClick="noAccount"
+        android:paddingTop="10dp"
+        android:text="I don't have an account"
+        android:textAlignment="center"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/textview_no_password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:gravity="center_horizontal"
+        android:onClick="noPassword"
+        android:paddingTop="10dp"
+        android:text="I forgot my password"
+
+        android:textAlignment="center"
+        android:textSize="18sp" />
 
 </LinearLayout>
 
