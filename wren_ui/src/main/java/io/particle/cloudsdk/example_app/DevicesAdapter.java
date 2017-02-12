@@ -2,6 +2,7 @@
 package io.particle.cloudsdk.example_app;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -106,8 +107,24 @@ public class DevicesAdapter extends ArrayAdapter<ParticleDevice> implements View
             viewHolder.warning = (ImageButton) convertView.findViewById(R.id.button_warning);
             viewHolder.status = (ImageButton) convertView.findViewById(R.id.button_status);
 
-            viewHolder.temperature.setOnClickListener(
-                    view -> Toast.makeText(mContext, "temperature", Toast.LENGTH_SHORT).show());
+            viewHolder.temperature.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    // Toast.makeText(mContext, "temperature", Toast.LENGTH_SHORT).show();
+                    // Todo: Needs to have a check if the device is online before moving into device
+                    // screen
+                    // if (device.isConnected){
+                    Intent intent = new Intent(mContext, DeviceActivity.class);
+                    intent.putExtra("Device", dataModel);
+                    Log.d(TAG, "Before startactivity");
+                    mContext.startActivity(intent);
+                    // else {
+                    // Toast.makeText(mContext, "Device is not online", Toast.LENGTH_SHORT).show();
+                    // }
+
+                }
+            });
 
             viewHolder.deviceName.setOnClickListener(view -> Toast
                     .makeText(mContext, dataModel.getName(), Toast.LENGTH_SHORT).show());
