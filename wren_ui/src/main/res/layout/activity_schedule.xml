@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        android:orientation="vertical">
+
+
+        <!-- Style for buttons set in res -> values -> styles.xml -->
+
+        <Button
+            android:id="@+id/button_monday"
+            style="@style/DayButton"
+            android:text="M" />
+
+        <Button
+            android:id="@+id/button_tuesday"
+            style="@style/DayButton"
+            android:text="Tu" />
+
+        <Button
+            android:id="@+id/button_wednesday"
+            style="@style/DayButton"
+            android:text="W" />
+
+        <Button
+            android:id="@+id/button_thursday"
+            style="@style/DayButton"
+            android:text="Th" />
+
+        <Button
+            android:id="@+id/button_friday"
+            style="@style/DayButton"
+            android:text="F" />
+
+        <Button
+            android:id="@+id/button_saturday"
+            style="@style/DayButton"
+            android:text="Sa" />
+
+        <Button
+            android:id="@+id/button_sunday"
+            style="@style/DayButton"
+            android:text="Su" />
+    </LinearLayout>
+
+</RelativeLayout>

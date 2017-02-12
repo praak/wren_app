@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Use this file to override the settings used by Particle:
+    https://docs.particle.io/reference/android/#android-device-setup-library -->
+
+    <!-- Brand Info -->
+    <string name="brand_name">Wren</string>
+    <string name="app_name">@string/brand_name</string>
+    <string name="device_name">Thermostat</string>
+    <drawable name="device_image">@drawable/photon_vector</drawable>
+    <drawable name="device_image_small">@drawable/photon_vector_small</drawable>
+    <drawable name="brand_image_horizontal">@drawable/wren_transparent</drawable>
+    <drawable name="brand_image_vertical">@drawable/particle_vertical_blue</drawable>
+    <drawable name="screen_background">@drawable/trianglifybackground</drawable>
+    <color name="brand_image_background_color">#641A1A1A</color>
+
+    <!-- Technical Data -->
+    <string name="mode_button_name">Mode button</string>
+    <string name="listen_mode_led_color_name">blue</string>
+    <string name="network_name_prefix">@string/device_name</string>
+
+    <!-- Legal/Technical Info -->
+    <string name="terms_of_service_uri">https://www.particle.io/tos</string>
+    <string name="privacy_policy_uri">https://www.particle.io/privacy</string>
+    <string name="forgot_password_uri">https://login.particle.io/forgot</string>
+    <string name="troubleshooting_uri">https://community.particle.io/t/spark-core-troubleshooting-guide-spark-team/696</string>
+    <string name="terms_of_service_html_file">NOT_DEFINED</string>
+    <string name="privacy_policy_html_file">NOT_DEFINED</string>
+    <string name="forgot_password_html_file">NOT_DEFINED</string>
+    <string name="troubleshooting_html_file">NOT_DEFINED</string>
+    <bool name="show_sign_up_page_fine_print">true</bool>
+
+    <!-- Look and Feel -->
+    <color name="page_background_color">#F2F2F2</color>
+    <color name="form_field_background_color">@android:color/white</color>
+    <color name="normal_text_color">@android:color/white</color>
+    <color name="link_text_color">@android:color/white</color>
+    <color name="link_text_bg">#19AAAAAA</color>
+    <color name="error_text_color">#FE4747</color>
+    <color name="element_background_color">#00BAEC</color>
+    <color name="element_background_color_dark">#0083A6</color>
+    <color name="element_text_color">@android:color/white</color>
+    <color name="element_text_disabled_color">#E0E0E0</color>
+
+
+    <!--&lt;!&ndash; Organization Mode &ndash;&gt;-->
+    <!--&lt;!&ndash; enable organization mode &ndash;&gt;-->
+    <!--<bool name="organization">true</bool>-->
+    <!--&lt;!&ndash; organization display name &ndash;&gt;-->
+    <!--<string name="organization_name">Acme Wireless-Enabled Widget Company</string>-->
+    <!--&lt;!&ndash; organizational name for API endpoint URL - must specify for orgMode *new* &ndash;&gt;-->
+    <!--<string name="organization_slug">acme_wireless_enabled_widgets</string>-->
+    <!--&lt;!&ndash; enable product string for API endpoint URL - must specify for orgMode *new* &ndash;&gt;-->
+    <!--<string name="product_slug">acme-widget-model-123</string>-->
+
+</resources>

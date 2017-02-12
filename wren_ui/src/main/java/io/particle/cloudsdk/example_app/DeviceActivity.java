@@ -1,7 +1,4 @@
-
 package io.particle.cloudsdk.example_app;
-
-import java.io.IOException;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -16,6 +13,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.NumberPicker;
 import android.widget.TextView;
+
+import java.io.IOException;
 
 import io.particle.android.sdk.cloud.ParticleCloudException;
 import io.particle.android.sdk.cloud.ParticleCloudSDK;
@@ -66,6 +65,11 @@ public class DeviceActivity extends AppCompatActivity {
 
         numberPicker.setOnValueChangedListener((picker, oldVal, newVal) -> {
             currtemp.setText(String.valueOf(newVal));
+        });
+
+        setschedule.setOnClickListener(view -> {
+            Intent intent = new Intent(this, ScheduleActivity.class);
+            startActivity(intent);
         });
 
     }
