@@ -1,36 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rl"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="top"
     android:orientation="vertical"
-    android:weightSum="1">
+    android:weightSum="100">
 
     <TextView
         android:id="@+id/textview_devicename"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:gravity="center"
-        android:text="TextView"
-        android:textSize="20sp" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView" />
 
     <TextView
         android:id="@+id/textview_temperature"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TextView"
-        android:textSize="25sp" />
+        android:layout_below="@+id/textview_device_name"
+        android:layout_toRightOf="@+id/textview_devicename"
+        android:text="Temperature Number here." />
 
     <NumberPicker
-        android:layout_width="match_parent"
-        android:layout_height="100dp" />
-
-    <ImageButton
-        android:id="@+id/button"
+        android:id="@+id/numberpicker_temperature"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="ImageButton" />
+        android:layout_above="@+id/ll"
+        android:layout_below="@+id/textview_temperature"
+        android:layout_centerInParent="true"
+        android:layout_toRightOf="@+id/textview_temperature" />
 
-    <ImageButton
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-</LinearLayout>
+    <TextView
+        android:id="@+id/textview_curr_temp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/numberpicker_temperature"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/textview_devicename"
+        android:layout_toLeftOf="@+id/numberpicker_temperature"
+        android:layout_toStartOf="@+id/numberpicker_temperature"
+        android:gravity="center"
+        android:text="69"
+        android:textSize="40sp" />
+
+    <LinearLayout
+        android:id="@+id/ll"
+        android:layout_width="wrap_content"
+        android:layout_height="100dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/imagebutton_remotesensors"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/imagebutton_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/imagebutton_setschedule"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+</RelativeLayout>
