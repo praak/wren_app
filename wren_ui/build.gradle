@@ -43,6 +43,7 @@ dependencies {
 
     compile 'com.android.support:appcompat-v7:25.1.0'
     compile 'com.android.support:support-fragment:25.1.0'
+    compile 'io.particle:devicesetup:0.4.0'
 
     retrolambdaConfig 'net.orfjackal.retrolambda:retrolambda:2.3.0'
 }
