@@ -1,5 +1,6 @@
-
 package io.particle.cloudsdk.example_app;
+
+import java.io.IOException;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -15,8 +16,6 @@ import android.widget.ImageButton;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.io.IOException;
 
 import io.particle.android.sdk.cloud.ParticleCloudException;
 import io.particle.android.sdk.cloud.ParticleCloudSDK;
@@ -83,6 +82,12 @@ public class DeviceActivity extends AppCompatActivity {
             AlertDialog alert = builder.create();
             alert.show();
         });
+
+        setschedule.setOnClickListener(view -> {
+            Intent intent = new Intent(this, ScheduleActivity.class);
+            startActivity(intent);
+        });
+
     }
 
     @Override

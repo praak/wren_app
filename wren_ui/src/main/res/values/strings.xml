@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Wren</string>
 
     <string name="hello_world">Splash!</string>
     <string name="action_settings">Settings</string>
@@ -10,5 +9,6 @@
     <string name="rename">Rename</string>
     <string name="remove">Remove</string>
     <string name="logout">Logout</string>
+    <string name="title_activity_schedule">ScheduleActivity</string>
 
 </resources>
