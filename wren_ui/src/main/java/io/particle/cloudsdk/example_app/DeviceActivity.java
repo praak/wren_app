@@ -1,8 +1,6 @@
 
 package io.particle.cloudsdk.example_app;
 
-import java.io.IOException;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,6 +14,9 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.NumberPicker;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.IOException;
 
 import io.particle.android.sdk.cloud.ParticleCloudException;
 import io.particle.android.sdk.cloud.ParticleCloudSDK;
@@ -55,9 +56,7 @@ public class DeviceActivity extends AppCompatActivity {
         numberPicker.setWrapSelectorWheel(false);
 
         Bundle bundle = getIntent().getExtras();
-
         mDevice = bundle.getParcelable("Device");
-
         setTitle(mDevice.getName());
 
         devicename.setText("Text" + mDevice.getName());
@@ -68,6 +67,22 @@ public class DeviceActivity extends AppCompatActivity {
             currtemp.setText(String.valueOf(newVal));
         });
 
+        mode.setOnClickListener(v -> {
+
+            final CharSequence[] items = {
+                    "Auto", "Heat", "Cool", "OFF"
+            };
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(DeviceActivity.this);
+            builder.setTitle("Make your selection");
+            builder.setItems(items, (dialog, item) -> {
+                // Do something with the selection
+                Toast.makeText(getBaseContext(), "Mode: " + items[item], Toast.LENGTH_SHORT)
+                        .show();
+            });
+            AlertDialog alert = builder.create();
+            alert.show();
+        });
     }
 
     @Override

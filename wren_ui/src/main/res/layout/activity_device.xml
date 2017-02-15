@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/rl"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -59,19 +60,29 @@
             android:id="@+id/imagebutton_remotesensors"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:elevation="10dp"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/ic_remote_sensors" />
 
         <ImageButton
             android:id="@+id/imagebutton_mode"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:elevation="10dp"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/ic_heat_cold"
+            android:clickable="true"/>
 
         <ImageButton
             android:id="@+id/imagebutton_setschedule"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:elevation="10dp"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/ic_set_schedule" />
 
     </LinearLayout>
 
