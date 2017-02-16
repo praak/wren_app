@@ -25,7 +25,8 @@
         android:id="@+id/button_warning"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:background="@drawable/warning_icon" />
+        android:background="@drawable/warning_icon"
+        />
 
     <ImageButton
         android:id="@+id/button_status"

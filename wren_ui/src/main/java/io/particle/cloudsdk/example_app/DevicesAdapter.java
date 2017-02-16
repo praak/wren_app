@@ -107,10 +107,18 @@ public class DevicesAdapter extends ArrayAdapter<ParticleDevice> implements View
             viewHolder.warning = (ImageButton) convertView.findViewById(R.id.button_warning);
             viewHolder.status = (ImageButton) convertView.findViewById(R.id.button_status);
 
+            // Todo: Better way for changing view with click on either temperature, or name
             viewHolder.temperature.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    Toast.makeText(mContext, "temperature", Toast.LENGTH_SHORT).show();
 
+                }
+            });
+
+            viewHolder.deviceName.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
                     // Toast.makeText(mContext, "temperature", Toast.LENGTH_SHORT).show();
                     // Todo: Needs to have a check if the device is online before moving into device
                     // screen
@@ -125,9 +133,6 @@ public class DevicesAdapter extends ArrayAdapter<ParticleDevice> implements View
 
                 }
             });
-
-            viewHolder.deviceName.setOnClickListener(view -> Toast
-                    .makeText(mContext, dataModel.getName(), Toast.LENGTH_SHORT).show());
 
             viewHolder.warning.setOnClickListener(
                     view -> Toast.makeText(mContext, "Warning", Toast.LENGTH_SHORT).show());

@@ -145,6 +145,7 @@ public class ValueActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    // Todo: template setup for AsyncTask for potentially talking with ThinkSpeak. (REST API SETUP)
     private class MyTask extends AsyncTask<String, String, String> {
 
         @Override

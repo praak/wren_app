@@ -1,21 +1,23 @@
 package io.particle.cloudsdk.example_app;
 
-import java.io.IOException;
-
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.NumberPicker;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.IOException;
 
 import io.particle.android.sdk.cloud.ParticleCloudException;
 import io.particle.android.sdk.cloud.ParticleCloudSDK;
@@ -29,51 +31,86 @@ import io.particle.android.sdk.utils.Toaster;
 
 public class DeviceActivity extends AppCompatActivity {
 
-    TextView temperature, devicename, currtemp;
     ImageButton remotesensors, mode, setschedule;
+    Button setTemp;
 
     ParticleDevice mDevice;
-    NumberPicker numberPicker;
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device);
 
-        temperature = (TextView) findViewById(R.id.textview_temperature);
-        devicename = (TextView) findViewById(R.id.textview_devicename);
-        currtemp = (TextView) findViewById(R.id.textview_curr_temp);
+        setTemp = (Button) findViewById(R.id.button_set_temp);
 
         remotesensors = (ImageButton) findViewById(R.id.imagebutton_remotesensors);
         mode = (ImageButton) findViewById(R.id.imagebutton_mode);
         setschedule = (ImageButton) findViewById(R.id.imagebutton_setschedule);
 
-        numberPicker = (NumberPicker) findViewById(R.id.numberpicker_temperature);
-        numberPicker.setMinValue(40);
-        numberPicker.setMaxValue(110);
-        numberPicker.setValue(72);
-        numberPicker.setWrapSelectorWheel(false);
-
         Bundle bundle = getIntent().getExtras();
         mDevice = bundle.getParcelable("Device");
+        // Set the title name for the page
         setTitle(mDevice.getName());
 
-        devicename.setText("Text" + mDevice.getName());
-        devicename.setAlpha(0.0f);
-        temperature.setAlpha(0.0f);
+        SharedPreferences pref = getApplicationContext().getSharedPreferences(mDevice.getID(), 0);
+        SharedPreferences.Editor editor = pref.edit();
 
-        numberPicker.setOnValueChangedListener((picker, oldVal, newVal) -> {
-            currtemp.setText(String.valueOf(newVal));
+        int sharedValue;
+        sharedValue = pref.getInt(mDevice.getID(), 69);
+        setTemp.setText("" + sharedValue + " \u2109");
+
+        setTemp.setOnClickListener(v -> {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            AlertDialog alertDialog;
+            final NumberPicker numberPicker = new NumberPicker(this);
+            numberPicker.setMinValue(40);
+            numberPicker.setMaxValue(110);
+            numberPicker.setValue(pref.getInt(mDevice.getID(), 72));
+            numberPicker.setWrapSelectorWheel(false);
+
+            alertDialogBuilder.setTitle("Set Temperature");
+
+            alertDialogBuilder
+                    .setView(numberPicker)
+                    .setCancelable(true)
+                    .setPositiveButton("Set", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            int userTemp = numberPicker.getValue();
+                            // Toast to see the value set by user
+                            // Toast.makeText(getBaseContext(), "Temp:" + userTemp,
+                            // Toast.LENGTH_SHORT)
+                            // .show();
+                            // Todo: Needs to be setup on wall unit.
+                            // Todo: only says for temporary, value doesnt save for later use
+                            // \u2109 = degreesF
+                            setTemp.setText(userTemp + " \u2109");
+                            editor.putInt(mDevice.getID(), userTemp);
+                            editor.commit();
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // if this button is clicked, just close
+                            // the dialog box and do nothing
+                            dialog.cancel();
+                        }
+                    });
+
+            // create alert dialog
+            alertDialog = alertDialogBuilder.create();
+
+            // show it
+            alertDialog.show();
+
         });
 
         mode.setOnClickListener(v -> {
-
             final CharSequence[] items = {
                     "Auto", "Heat", "Cool", "OFF"
             };
-
             AlertDialog.Builder builder = new AlertDialog.Builder(DeviceActivity.this);
-            builder.setTitle("Make your selection");
+            builder.setTitle("Select Mode:");
             builder.setItems(items, (dialog, item) -> {
                 // Do something with the selection
                 Toast.makeText(getBaseContext(), "Mode: " + items[item], Toast.LENGTH_SHORT)
@@ -157,7 +194,6 @@ public class DeviceActivity extends AppCompatActivity {
                                 dialog.cancel();
                             }
                         });
-
                 // create alert dialog
                 alertDialog = alertDialogBuilder.create();
 
@@ -175,7 +211,6 @@ public class DeviceActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialog, int id) {
                                 Async.executeAsync(mDevice,
                                         new Async.ApiWork<ParticleDevice, Integer>() {
-
                                             public Integer callApi(ParticleDevice particleDevice)
                                                     throws ParticleCloudException, IOException {
                                                 mDevice.unclaim();
@@ -189,6 +224,7 @@ public class DeviceActivity extends AppCompatActivity {
                                                 Intent intent = new Intent(DeviceActivity.this,
                                                         ValueActivity.class);
                                                 startActivity(intent);
+
                                                 finish();
                                             }
 
@@ -201,7 +237,6 @@ public class DeviceActivity extends AppCompatActivity {
                                                         "Uh oh, something went wrong.");
                                             }
                                         });
-
                             }
                         })
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
