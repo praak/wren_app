@@ -1,10 +1,10 @@
 package io.particle.cloudsdk.example_app;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -15,7 +15,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.NumberPicker;
-import android.widget.Toast;
 
 import java.io.IOException;
 
@@ -36,7 +35,6 @@ public class DeviceActivity extends AppCompatActivity {
 
     ParticleDevice mDevice;
 
-    @SuppressLint("SetTextI18n")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,13 +54,21 @@ public class DeviceActivity extends AppCompatActivity {
         SharedPreferences pref = getApplicationContext().getSharedPreferences(mDevice.getID(), 0);
         SharedPreferences.Editor editor = pref.edit();
 
-        int sharedValue;
-        sharedValue = pref.getInt(mDevice.getID(), 69);
-        setTemp.setText("" + sharedValue + " \u2109");
+        // getting the value from shared preferences to update number on Button
+        int sharedTemp;
+        sharedTemp = pref.getInt(mDevice.getID(), 69);
+        setTemp.setText("" + sharedTemp + " \u2109");
+
+        int sharedMode;
+        sharedMode = pref.getInt(mDevice.getID() + "_mode", 0);
+        Drawable modeIcon = mode.getBackground();
+
+        changeModeBackground(sharedMode, modeIcon);
 
         setTemp.setOnClickListener(v -> {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
             AlertDialog alertDialog;
+
             final NumberPicker numberPicker = new NumberPicker(this);
             numberPicker.setMinValue(40);
             numberPicker.setMaxValue(110);
@@ -70,54 +76,53 @@ public class DeviceActivity extends AppCompatActivity {
             numberPicker.setWrapSelectorWheel(false);
 
             alertDialogBuilder.setTitle("Set Temperature");
-
             alertDialogBuilder
                     .setView(numberPicker)
                     .setCancelable(true)
                     .setPositiveButton("Set", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             int userTemp = numberPicker.getValue();
-                            // Toast to see the value set by user
-                            // Toast.makeText(getBaseContext(), "Temp:" + userTemp,
-                            // Toast.LENGTH_SHORT)
-                            // .show();
-                            // Todo: Needs to be setup on wall unit.
-                            // Todo: only says for temporary, value doesnt save for later use
-                            // \u2109 = degreesF
+                            /*
+                            Toast to see the value set by user
+                            Toast.makeText(getBaseContext(), "Temp:" + userTemp,
+                            Toast.LENGTH_SHORT)
+                            .show();
+                            Todo: Needs to be setup on wall unit.
+                            \u2109 = degreesF
+                            */
                             setTemp.setText(userTemp + " \u2109");
                             editor.putInt(mDevice.getID(), userTemp);
-                            editor.commit();
+                            editor.apply();
                         }
                     })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // if this button is clicked, just close
-                            // the dialog box and do nothing
-                            dialog.cancel();
-                        }
+                    .setNegativeButton("Cancel", (dialog, id) -> {
+                        // close the dialog box and do nothing
+                        dialog.cancel();
                     });
 
             // create alert dialog
             alertDialog = alertDialogBuilder.create();
-
             // show it
             alertDialog.show();
-
         });
 
         mode.setOnClickListener(v -> {
-            final CharSequence[] items = {
-                    "Auto", "Heat", "Cool", "OFF"
-            };
+            final CharSequence[] items = {"Auto", "Heat", "Cool", "OFF"};
             AlertDialog.Builder builder = new AlertDialog.Builder(DeviceActivity.this);
             builder.setTitle("Select Mode:");
             builder.setItems(items, (dialog, item) -> {
                 // Do something with the selection
-                Toast.makeText(getBaseContext(), "Mode: " + items[item], Toast.LENGTH_SHORT)
-                        .show();
+//                Toast.makeText(getBaseContext(), "Mode: " + items[item] + "num:" + item, Toast.LENGTH_SHORT)
+//                        .show();
+                //Todo: need preferences to save for MODE
+                editor.putInt(mDevice.getID() + "_mode", item);
+                editor.apply();
+                changeModeBackground(item, modeIcon);
             });
+
             AlertDialog alert = builder.create();
             alert.show();
+            alert.getWindow().setLayout(600, 750);
         });
 
         setschedule.setOnClickListener(view -> {
@@ -125,6 +130,35 @@ public class DeviceActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+    }
+
+    public void changeModeBackground(int sharedMode, Drawable modeIcon) {
+        switch (sharedMode) {
+            case 0:
+                if (modeIcon != getResources().getDrawable(R.drawable.ic_heat_cold)) {
+                    mode.setBackground(getResources().getDrawable(R.drawable.ic_heat_cold));
+                } else {// do nothing
+                }
+                break;
+            case 1:
+                if (modeIcon != getResources().getDrawable(R.drawable.ic_red_heat)) {
+                    mode.setBackground(getResources().getDrawable(R.drawable.ic_red_heat));
+                } else {// do nothing
+                }
+                break;
+            case 2:
+                if (modeIcon != getResources().getDrawable(R.drawable.ic_blue_cold)) {
+                    mode.setBackground(getResources().getDrawable(R.drawable.ic_blue_cold));
+                } else {// do nothing
+                }
+                break;
+            case 3:
+                if (modeIcon != getResources().getDrawable(R.drawable.ic_remote_sensors)) {
+                    mode.setBackground(getResources().getDrawable(R.drawable.ic_remote_sensors));
+                } else {// do nothing
+                }
+                break;
+        }
     }
 
     @Override
@@ -162,7 +196,6 @@ public class DeviceActivity extends AppCompatActivity {
                                 String newName = input.getText().toString().trim();
                                 Async.executeAsync(mDevice,
                                         new Async.ApiWork<ParticleDevice, Integer>() {
-
                                             public Integer callApi(ParticleDevice particleDevice)
                                                     throws ParticleCloudException, IOException {
                                                 mDevice.setName(newName);
@@ -187,12 +220,9 @@ public class DeviceActivity extends AppCompatActivity {
                                         });
                             }
                         })
-                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // if this button is clicked, just close
-                                // the dialog box and do nothing
-                                dialog.cancel();
-                            }
+                        .setNegativeButton("Cancel", (dialog, id) -> {
+                            // close the dialog box and do nothing
+                            dialog.cancel();
                         });
                 // create alert dialog
                 alertDialog = alertDialogBuilder.create();
@@ -239,12 +269,9 @@ public class DeviceActivity extends AppCompatActivity {
                                         });
                             }
                         })
-                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // if this button is clicked, just close
-                                // the dialog box and do nothing
-                                dialog.cancel();
-                            }
+                        .setNegativeButton("Cancel", (dialog, id) -> {
+                            // close the dialog box and do nothing
+                            dialog.cancel();
                         });
 
                 // create alert dialog
@@ -269,12 +296,9 @@ public class DeviceActivity extends AppCompatActivity {
                                 finish();
                             }
                         })
-                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // if this button is clicked, just close
-                                // the dialog box and do nothing
-                                dialog.cancel();
-                            }
+                        .setNegativeButton("Cancel", (dialog, id) -> {
+                            // close the dialog box and do nothing
+                            dialog.cancel();
                         });
 
                 // create alert dialog
