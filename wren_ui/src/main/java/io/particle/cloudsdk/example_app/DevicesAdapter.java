@@ -1,8 +1,12 @@
 
 package io.particle.cloudsdk.example_app;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,28 +18,55 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
+import io.particle.android.sdk.cloud.ParticleCloud;
+import io.particle.android.sdk.cloud.ParticleCloudException;
+import io.particle.android.sdk.cloud.ParticleCloudSDK;
 import io.particle.android.sdk.cloud.ParticleDevice;
+import io.particle.android.sdk.cloud.ParticleEvent;
+import io.particle.android.sdk.cloud.ParticleEventHandler;
+import io.particle.android.sdk.utils.Async;
+import io.particle.android.sdk.utils.Toaster;
 
 /**
  * Created by charlesscholle on 2/11/17.
  */
 
-public class DevicesAdapter extends ArrayAdapter<ParticleDevice> implements View.OnClickListener {
+public class DevicesAdapter extends ArrayAdapter<ParticleDevice> {
 
+    public static final int WALL_UNIT_TEMP = 100;
     private static final String TAG = "DevicesAdapter";
     private static final int CONNECTED = 1;
     private static final int NOT_CONNECTED = 0;
-
+    private final Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message message) {
+            if (message.what == WALL_UNIT_TEMP) {
+                Bundle bundle = message.getData();
+                String eventName = bundle.getString("EventName");
+                String payloadData = bundle.getString("Payload");
+                // TextView textviewCurrent;
+                // textviewCurrent = viewHolder.temperature.setText(payloadData);
+            }
+        }
+    };
+    ViewHolder viewHolder; // view lookup cache stored in tag
     Context mContext;
+    Activity callingActivity;
+    // Keep track of subscriptions
+    List<Long> subscriptions = new ArrayList<Long>();
     private ArrayList<ParticleDevice> dataSet;
     private int lastPosition = -1;
 
-    public DevicesAdapter(Context context, ArrayList<ParticleDevice> data) {
+    public DevicesAdapter(Context context, ArrayList<ParticleDevice> data,
+            Activity callingActivity) {
         super(context, R.layout.device_template, data);
         this.dataSet = data;
         this.mContext = context;
+        this.callingActivity = callingActivity;
     }
 
     @Override
@@ -49,51 +80,11 @@ public class DevicesAdapter extends ArrayAdapter<ParticleDevice> implements View
     }
 
     @Override
-    public void onClick(View view) {
-        int position = (Integer) view.getTag();
-        Log.d(TAG, String.valueOf(position));
-        Object object = getItem(position);
-        ParticleDevice dataModel = (ParticleDevice) object;
-
-        switch (view.getId()) {
-
-            case R.id.textview_temperature:
-
-                Toast.makeText(mContext, dataModel.getName(), Toast.LENGTH_LONG).show();
-
-                break;
-            case R.id.textview_device_name:
-
-                Toast.makeText(mContext, dataModel.getName(), Toast.LENGTH_LONG).show();
-
-                break;
-            // case R.id.button_warning:
-            //
-            // Toast.makeText(mContext, dataModel.getName(), Toast.LENGTH_LONG).show();
-            //
-            // break;
-            //
-            // case R.id.button_status:
-            //
-            // Toast.makeText(mContext, dataModel.getName(), Toast.LENGTH_LONG).show();
-            //
-            // break;
-            //
-            // case R.id.button_device_edit:
-            //
-            // Toast.makeText(mContext, dataModel.getName(), Toast.LENGTH_LONG).show();
-            //
-            // break;
-
-        }
-    }
-
-    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // Get the data item for this position
         ParticleDevice dataModel = getItem(position);
         // Check if an existing view is being reused, otherwise inflate the view
-        ViewHolder viewHolder; // view lookup cache stored in tag
+        // ViewHolder viewHolder; // view lookup cache stored in tag
 
         final View result;
 
@@ -107,14 +98,14 @@ public class DevicesAdapter extends ArrayAdapter<ParticleDevice> implements View
             viewHolder.warning = (ImageButton) convertView.findViewById(R.id.button_warning);
             viewHolder.status = (ImageButton) convertView.findViewById(R.id.button_status);
 
-            // Todo: Better way for changing view with click on either temperature, or name
-            viewHolder.temperature.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(mContext, "temperature", Toast.LENGTH_SHORT).show();
-
-                }
-            });
+            // // Todo: Better way for changing view with click on either temperature, or name
+            // viewHolder.temperature.setOnClickListener(new View.OnClickListener() {
+            // @Override
+            // public void onClick(View v) {
+            // Toast.makeText(mContext, "temperature", Toast.LENGTH_SHORT).show();
+            //
+            // }
+            // });
 
             viewHolder.deviceName.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -153,10 +144,53 @@ public class DevicesAdapter extends ArrayAdapter<ParticleDevice> implements View
         result.startAnimation(animation);
         lastPosition = position;
 
-        viewHolder.temperature.setText("72" + (char) 0x00B0 + " F");
+        viewHolder.temperature.setText("-- \u2109");
         viewHolder.deviceName.setText(dataModel.getName());
         viewHolder.warning.setVisibility(dataModel.isFlashing() ? View.VISIBLE : View.INVISIBLE);
         viewHolder.status.setVisibility(!dataModel.isConnected() ? View.VISIBLE : View.INVISIBLE);
+
+        Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Long>() {
+
+            @Override
+            public Long callApi(ParticleCloud particleCloud)
+                    throws ParticleCloudException, IOException {
+                return ParticleCloudSDK.getCloud().subscribeToMyDevicesEvents(
+                        "wall_temp",
+                        new ParticleEventHandler() {
+                            public void onEvent(String eventName, ParticleEvent event) {
+                                // Message message = handler.obtainMessage(WALL_UNIT_TEMP);
+                                // Bundle bundle = new Bundle();
+                                //
+                                // bundle.putInt("ViewId", viewHolder.temperature.getId());
+                                // bundle.putString("DeviceId", event.deviceId);
+                                // bundle.putString("EventName", eventName);
+                                // bundle.putString("Payload", event.dataPayload);
+                                // message.setData(bundle);
+                                // handler.sendMessage(message);
+                                callingActivity.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toaster.s(callingActivity, "Ppostiio: " + position);
+                                    }
+                                });
+
+                            }
+
+                            public void onEventError(Exception e) {
+                            }
+                        });
+            }
+
+            @Override
+            public void onSuccess(Long subId) {
+                subscriptions.add(subId);
+            }
+
+            @Override
+            public void onFailure(ParticleCloudException exception) {
+            }
+        });
+
         // Return the completed view to render on screen
         return convertView;
     }

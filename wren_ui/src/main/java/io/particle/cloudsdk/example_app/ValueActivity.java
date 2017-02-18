@@ -1,4 +1,3 @@
-
 package io.particle.cloudsdk.example_app;
 
 import android.app.AlertDialog;
@@ -8,11 +7,15 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -27,12 +30,26 @@ import io.particle.android.sdk.cloud.ParticleCloudSDK;
 import io.particle.android.sdk.cloud.ParticleDevice;
 import io.particle.android.sdk.devicesetup.ParticleDeviceSetupLibrary;
 import io.particle.android.sdk.utils.Async;
+import io.particle.android.sdk.utils.Toaster;
 
 public class ValueActivity extends AppCompatActivity {
 
+    public static final int WALL_UNIT_TEMP = 100;
     private static final String TAG = "ValueActivity";
-
     private static DevicesAdapter mDevicesAdapter;
+    private final Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message message) {
+            if (message.what == WALL_UNIT_TEMP) {
+                Bundle bundle = message.getData();
+                int viewid = bundle.getInt("ViewId");
+                String eventName = bundle.getString("EventName");
+                String payloadData = bundle.getString("Payload");
+            }
+        }
+    };
+    // Keep track of subscriptions
+    List<Long> subscriptions = new ArrayList<Long>();
     ArrayList<ParticleDevice> mDevices;
     ListView listView;
     ImageButton buttonAddDevice;
@@ -57,12 +74,51 @@ public class ValueActivity extends AppCompatActivity {
         buttonAddDevice.setOnClickListener(view -> {
             ParticleDeviceSetupLibrary.startDeviceSetup(this, ValueActivity.class);
         });
+
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         updateDeviceListView();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unsubscribe();
+    }
+
+    private void unsubscribe() {
+        Async.executeAsync(ParticleCloudSDK.getCloud(),
+                new Async.ApiWork<ParticleCloud, ParticleCloud>() {
+                    @Override
+                    public ParticleCloud callApi(@NonNull ParticleCloud ParticleCloud)
+                            throws ParticleCloudException, IOException {
+                        for (Long subscription : subscriptions) {
+                            ParticleCloud.unsubscribeFromEventWithID(subscription);
+                        }
+                        return ParticleCloud;
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull ParticleCloud cloud) { // this goes on the main
+
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull ParticleCloudException e) {
+                        e.printStackTrace();
+                    }
+                });
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        unsubscribe();
+
     }
 
     private void updateDeviceListView() {
@@ -80,8 +136,14 @@ public class ValueActivity extends AppCompatActivity {
                     public void onSuccess(@NonNull List devices) { // this goes on the main thread
                         // get names, post on listview
                         mDevices = (ArrayList<ParticleDevice>) devices;
-                        mDevicesAdapter = new DevicesAdapter(getApplicationContext(), mDevices);
+                        mDevicesAdapter = new DevicesAdapter(getApplicationContext(), mDevices, ValueActivity.this);
                         listView.setAdapter(mDevicesAdapter);
+                        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                                Toaster.s(ValueActivity.this, "ID: " + id);
+                            }
+                        });
                     }
 
                     @Override

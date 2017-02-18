@@ -1,11 +1,18 @@
 package io.particle.cloudsdk.example_app;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -15,12 +22,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.NumberPicker;
+import android.widget.TextView;
 
-import java.io.IOException;
-
+import io.particle.android.sdk.cloud.ParticleCloud;
 import io.particle.android.sdk.cloud.ParticleCloudException;
 import io.particle.android.sdk.cloud.ParticleCloudSDK;
 import io.particle.android.sdk.cloud.ParticleDevice;
+import io.particle.android.sdk.cloud.ParticleEvent;
+import io.particle.android.sdk.cloud.ParticleEventHandler;
 import io.particle.android.sdk.utils.Async;
 import io.particle.android.sdk.utils.Toaster;
 
@@ -30,30 +39,49 @@ import io.particle.android.sdk.utils.Toaster;
 
 public class DeviceActivity extends AppCompatActivity {
 
+    public static final int WALL_UNIT_TEMP = 100;
+
+    private final Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message message) {
+            if (message.what == WALL_UNIT_TEMP) {
+                Bundle bundle = message.getData();
+                String eventName = bundle.getString("EventName");
+                String payloadData = bundle.getString("Payload");
+                TextView textviewCurrent = (TextView) DeviceActivity.this
+                        .findViewById(R.id.textview_current);
+                textviewCurrent.setText(payloadData);
+            }
+        }
+    };
+
+    // Keep track of subscriptions
+    List<Long> subscriptions = new ArrayList<Long>();
+    TextView textview_temperature, devicename, currtemp;
     ImageButton remotesensors, mode, setschedule;
     Button setTemp;
-
     ParticleDevice mDevice;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device);
+        Bundle bundle = getIntent().getExtras();
+        mDevice = bundle.getParcelable("Device");
+        setTitle(mDevice.getName());
 
         setTemp = (Button) findViewById(R.id.button_set_temp);
+        textview_temperature = (TextView) findViewById(R.id.textview_temperature);
 
         remotesensors = (ImageButton) findViewById(R.id.imagebutton_remotesensors);
         mode = (ImageButton) findViewById(R.id.imagebutton_mode);
         setschedule = (ImageButton) findViewById(R.id.imagebutton_setschedule);
 
-        Bundle bundle = getIntent().getExtras();
-        mDevice = bundle.getParcelable("Device");
-        // Set the title name for the page
-        setTitle(mDevice.getName());
 
         SharedPreferences pref = getApplicationContext().getSharedPreferences(mDevice.getID(), 0);
         SharedPreferences.Editor editor = pref.edit();
 
+        // TODO: Grab settings from device instead of shared prefs
         // getting the value from shared preferences to update number on Button
         int sharedTemp;
         sharedTemp = pref.getInt(mDevice.getID(), 69);
@@ -72,6 +100,7 @@ public class DeviceActivity extends AppCompatActivity {
             final NumberPicker numberPicker = new NumberPicker(this);
             numberPicker.setMinValue(40);
             numberPicker.setMaxValue(110);
+            // TODO: Grab settings from device instead of shared prefs
             numberPicker.setValue(pref.getInt(mDevice.getID(), 72));
             numberPicker.setWrapSelectorWheel(false);
 
@@ -82,14 +111,6 @@ public class DeviceActivity extends AppCompatActivity {
                     .setPositiveButton("Set", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             int userTemp = numberPicker.getValue();
-                            /*
-                            Toast to see the value set by user
-                            Toast.makeText(getBaseContext(), "Temp:" + userTemp,
-                            Toast.LENGTH_SHORT)
-                            .show();
-                            Todo: Needs to be setup on wall unit.
-                            \u2109 = degreesF
-                            */
                             setTemp.setText(userTemp + " \u2109");
                             editor.putInt(mDevice.getID(), userTemp);
                             editor.apply();
@@ -130,6 +151,68 @@ public class DeviceActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Long>() {
+
+            @Override
+            public Long callApi(ParticleCloud particleCloud)
+                    throws ParticleCloudException, IOException {
+                return ParticleCloudSDK.getCloud().subscribeToDeviceEvents(
+                        "wall_temp",
+                        mDevice.getID(),
+                        new ParticleEventHandler() {
+                            public void onEvent(String eventName, ParticleEvent event) {
+                                Message message = handler.obtainMessage(WALL_UNIT_TEMP);
+                                Bundle bundle = new Bundle();
+                                bundle.putString("EventName", eventName);
+                                bundle.putString("Payload", event.dataPayload);
+                                message.setData(bundle);
+                                handler.sendMessage(message);
+                            }
+
+                            public void onEventError(Exception e) {
+                                Toaster.s(DeviceActivity.this, "Error: " + e.toString());
+                            }
+                        });
+            }
+
+            @Override
+            public void onSuccess(Long subId) {
+                subscriptions.add(subId);
+                Toaster.l(DeviceActivity.this, "Subscribed to device events successfully.");
+            }
+
+            @Override
+            public void onFailure(ParticleCloudException exception) {
+                Toaster.l(DeviceActivity.this, "Error subscribing to device events.");
+            }
+        });
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Async.executeAsync(ParticleCloudSDK.getCloud(),
+                new Async.ApiWork<ParticleCloud, ParticleCloud>() {
+                    @Override
+                    public ParticleCloud callApi(@NonNull ParticleCloud ParticleCloud)
+                            throws ParticleCloudException, IOException {
+                        for (Long subscription : subscriptions) {
+                            ParticleCloud.unsubscribeFromEventWithID(subscription);
+                        }
+                        return ParticleCloud;
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull ParticleCloud cloud) { // this goes on the main
+
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull ParticleCloudException e) {
+                        e.printStackTrace();
+                    }
+                });
     }
 
     public void changeModeBackground(int sharedMode, Drawable modeIcon) {
@@ -164,6 +247,27 @@ public class DeviceActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        Async.executeAsync(ParticleCloudSDK.getCloud(),
+                new Async.ApiWork<ParticleCloud, ParticleCloud>() {
+                    @Override
+                    public ParticleCloud callApi(@NonNull ParticleCloud ParticleCloud)
+                            throws ParticleCloudException, IOException {
+                        for (Long subscription : subscriptions) {
+                            ParticleCloud.unsubscribeFromEventWithID(subscription);
+                        }
+                        return ParticleCloud;
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull ParticleCloud cloud) { // this goes on the main
+
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull ParticleCloudException e) {
+                        e.printStackTrace();
+                    }
+                });
 
     }
 
