@@ -1,8 +1,10 @@
+
 package io.particle.cloudsdk.example_app;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -11,11 +13,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -28,11 +29,23 @@ import io.particle.android.sdk.cloud.ParticleCloud;
 import io.particle.android.sdk.cloud.ParticleCloudException;
 import io.particle.android.sdk.cloud.ParticleCloudSDK;
 import io.particle.android.sdk.cloud.ParticleDevice;
+import io.particle.android.sdk.cloud.ParticleEvent;
+import io.particle.android.sdk.cloud.ParticleEventHandler;
 import io.particle.android.sdk.devicesetup.ParticleDeviceSetupLibrary;
 import io.particle.android.sdk.utils.Async;
 import io.particle.android.sdk.utils.Toaster;
 
 public class ValueActivity extends AppCompatActivity {
+
+    public static void SaveInPreference(Context mContext, String key, String objString) {
+        SharedPreferences.Editor editor = mContext.getSharedPreferences("DeviceAdapter",
+                Context.MODE_PRIVATE).edit();
+        editor.putString(key+"_wall_temp", objString);
+        editor.apply();
+    }
+    // final SharedPreferences pref = getApplicationContext().getSharedPreferences("Test",
+    // Context.MODE_PRIVATE);
+    // final SharedPreferences.Editor editor = pref.edit();
 
     public static final int WALL_UNIT_TEMP = 100;
     private static final String TAG = "ValueActivity";
@@ -45,6 +58,13 @@ public class ValueActivity extends AppCompatActivity {
                 int viewid = bundle.getInt("ViewId");
                 String eventName = bundle.getString("EventName");
                 String payloadData = bundle.getString("Payload");
+                String id = bundle.getString("ID");
+                SaveInPreference(getBaseContext(), id, payloadData);
+                try {
+                    mDevicesAdapter.notifyDataSetChanged();
+                } catch (Exception e) {
+                    Log.e(TAG, "" + e.toString());
+                }
             }
         }
     };
@@ -71,10 +91,42 @@ public class ValueActivity extends AppCompatActivity {
 
         ParticleDeviceSetupLibrary.init(this.getApplicationContext(), ValueActivity.class);
 
-        buttonAddDevice.setOnClickListener(view -> {
-            ParticleDeviceSetupLibrary.startDeviceSetup(this, ValueActivity.class);
-        });
+        buttonAddDevice.setOnClickListener(
+                view -> ParticleDeviceSetupLibrary.startDeviceSetup(this, ValueActivity.class));
 
+        Async.executeAsync(ParticleCloudSDK.getCloud(), new Async.ApiWork<ParticleCloud, Long>() {
+
+            @Override
+            public Long callApi(ParticleCloud particleCloud)
+                    throws ParticleCloudException, IOException {
+                return ParticleCloudSDK.getCloud().subscribeToMyDevicesEvents(
+                        "wall_temp",
+                        new ParticleEventHandler() {
+                            public void onEvent(String eventName, ParticleEvent event) {
+                                Message message = handler.obtainMessage(WALL_UNIT_TEMP);
+                                Bundle bundle = new Bundle();
+                                bundle.putString("EventName", eventName);
+                                bundle.putString("Payload", event.dataPayload);
+                                bundle.putString("ID", event.deviceId);
+                                message.setData(bundle);
+                                handler.sendMessage(message);
+                            }
+
+                            public void onEventError(Exception e) {
+                                Toaster.s(ValueActivity.this, "Error" + e);
+                            }
+                        });
+            }
+
+            @Override
+            public void onSuccess(Long subId) {
+                subscriptions.add(subId);
+            }
+
+            @Override
+            public void onFailure(ParticleCloudException exception) {
+            }
+        });
 
     }
 
@@ -136,14 +188,10 @@ public class ValueActivity extends AppCompatActivity {
                     public void onSuccess(@NonNull List devices) { // this goes on the main thread
                         // get names, post on listview
                         mDevices = (ArrayList<ParticleDevice>) devices;
-                        mDevicesAdapter = new DevicesAdapter(getApplicationContext(), mDevices, ValueActivity.this);
+                        mDevicesAdapter = new DevicesAdapter(getApplicationContext(), mDevices,
+                                ValueActivity.this);
                         listView.setAdapter(mDevicesAdapter);
-                        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                                Toaster.s(ValueActivity.this, "ID: " + id);
-                            }
-                        });
+                        mDevicesAdapter.notifyDataSetChanged();
                     }
 
                     @Override

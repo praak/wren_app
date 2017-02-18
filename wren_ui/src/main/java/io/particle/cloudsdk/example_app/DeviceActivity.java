@@ -1,9 +1,5 @@
 package io.particle.cloudsdk.example_app;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -23,6 +19,10 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.NumberPicker;
 import android.widget.TextView;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.particle.android.sdk.cloud.ParticleCloud;
 import io.particle.android.sdk.cloud.ParticleCloudException;
@@ -50,7 +50,7 @@ public class DeviceActivity extends AppCompatActivity {
                 String payloadData = bundle.getString("Payload");
                 TextView textviewCurrent = (TextView) DeviceActivity.this
                         .findViewById(R.id.textview_current);
-                textviewCurrent.setText(payloadData);
+                textviewCurrent.setText("Current Temperature: \t" + payloadData + " \u2109");
             }
         }
     };
@@ -78,14 +78,14 @@ public class DeviceActivity extends AppCompatActivity {
         setschedule = (ImageButton) findViewById(R.id.imagebutton_setschedule);
 
 
-        SharedPreferences pref = getApplicationContext().getSharedPreferences(mDevice.getID(), 0);
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("SharedTemp", 0);
         SharedPreferences.Editor editor = pref.edit();
 
         // TODO: Grab settings from device instead of shared prefs
         // getting the value from shared preferences to update number on Button
-        int sharedTemp;
-        sharedTemp = pref.getInt(mDevice.getID(), 69);
-        setTemp.setText("" + sharedTemp + " \u2109");
+        String sharedTemp;
+        sharedTemp = pref.getString(mDevice.getID() + "_setTemp", "69");
+        setTemp.setText(sharedTemp + " \u2109");
 
         int sharedMode;
         sharedMode = pref.getInt(mDevice.getID() + "_mode", 0);
@@ -101,7 +101,7 @@ public class DeviceActivity extends AppCompatActivity {
             numberPicker.setMinValue(40);
             numberPicker.setMaxValue(110);
             // TODO: Grab settings from device instead of shared prefs
-            numberPicker.setValue(pref.getInt(mDevice.getID(), 72));
+            numberPicker.setValue(Integer.valueOf(pref.getString(mDevice.getID() + "_sharedTemp", "72")));
             numberPicker.setWrapSelectorWheel(false);
 
             alertDialogBuilder.setTitle("Set Temperature");
@@ -112,7 +112,7 @@ public class DeviceActivity extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int id) {
                             int userTemp = numberPicker.getValue();
                             setTemp.setText(userTemp + " \u2109");
-                            editor.putInt(mDevice.getID(), userTemp);
+                            editor.putString(mDevice.getID() + "_setTemp", String.valueOf(userTemp));
                             editor.apply();
                         }
                     })
@@ -178,12 +178,12 @@ public class DeviceActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Long subId) {
                 subscriptions.add(subId);
-                Toaster.l(DeviceActivity.this, "Subscribed to device events successfully.");
+//                Toaster.l(DeviceActivity.this, "Subscribed to device events successfully.");
             }
 
             @Override
             public void onFailure(ParticleCloudException exception) {
-                Toaster.l(DeviceActivity.this, "Error subscribing to device events.");
+//                Toaster.l(DeviceActivity.this, "Error subscribing to device events.");
             }
         });
 
