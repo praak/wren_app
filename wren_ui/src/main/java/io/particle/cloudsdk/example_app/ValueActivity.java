@@ -40,12 +40,9 @@ public class ValueActivity extends AppCompatActivity {
     public static void SaveInPreference(Context mContext, String key, String objString) {
         SharedPreferences.Editor editor = mContext.getSharedPreferences("DeviceAdapter",
                 Context.MODE_PRIVATE).edit();
-        editor.putString(key+"_wall_temp", objString);
+        editor.putString(key + "_wall_temp", objString);
         editor.apply();
     }
-    // final SharedPreferences pref = getApplicationContext().getSharedPreferences("Test",
-    // Context.MODE_PRIVATE);
-    // final SharedPreferences.Editor editor = pref.edit();
 
     public static final int WALL_UNIT_TEMP = 100;
     private static final String TAG = "ValueActivity";
@@ -55,8 +52,6 @@ public class ValueActivity extends AppCompatActivity {
         public void handleMessage(Message message) {
             if (message.what == WALL_UNIT_TEMP) {
                 Bundle bundle = message.getData();
-                int viewid = bundle.getInt("ViewId");
-                String eventName = bundle.getString("EventName");
                 String payloadData = bundle.getString("Payload");
                 String id = bundle.getString("ID");
                 SaveInPreference(getBaseContext(), id, payloadData);
@@ -105,7 +100,6 @@ public class ValueActivity extends AppCompatActivity {
                             public void onEvent(String eventName, ParticleEvent event) {
                                 Message message = handler.obtainMessage(WALL_UNIT_TEMP);
                                 Bundle bundle = new Bundle();
-                                bundle.putString("EventName", eventName);
                                 bundle.putString("Payload", event.dataPayload);
                                 bundle.putString("ID", event.deviceId);
                                 message.setData(bundle);

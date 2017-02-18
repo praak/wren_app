@@ -31,7 +31,6 @@ public class DevicesAdapter extends ArrayAdapter<ParticleDevice> {
     Activity callingActivity;
 
     private ArrayList<ParticleDevice> dataSet;
-    private int lastPosition = -1;
 
     public DevicesAdapter(Context context, ArrayList<ParticleDevice> data,
             Activity callingActivity) {
@@ -66,7 +65,6 @@ public class DevicesAdapter extends ArrayAdapter<ParticleDevice> {
         final View result;
 
         // Check if an existing view is being reused, otherwise inflate the view
-        // ViewHolder viewHolder; // view lookup cache stored in tag
         viewHolder = new ViewHolder();
 
         if (convertView == null) {
@@ -99,11 +97,6 @@ public class DevicesAdapter extends ArrayAdapter<ParticleDevice> {
             viewHolder = (ViewHolder) convertView.getTag();
             result = convertView;
         }
-
-        // Animation animation = AnimationUtils.loadAnimation(mContext,
-        // (position > lastPosition) ? R.anim.up_from_bottom : R.anim.down_from_top);
-        // result.startAnimation(animation);
-        // lastPosition = position;
 
         Log.d(TAG, "ID " + dataModel.getID() + "SharedString: " + sharedString);
         if (sharedString == "null") {

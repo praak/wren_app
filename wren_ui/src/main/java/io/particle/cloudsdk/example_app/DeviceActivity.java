@@ -57,7 +57,7 @@ public class DeviceActivity extends AppCompatActivity {
 
     // Keep track of subscriptions
     List<Long> subscriptions = new ArrayList<Long>();
-    TextView textview_temperature, devicename, currtemp;
+    TextView textview_temperature;
     ImageButton remotesensors, mode, setschedule;
     Button setTemp;
     ParticleDevice mDevice;
@@ -132,10 +132,6 @@ public class DeviceActivity extends AppCompatActivity {
             AlertDialog.Builder builder = new AlertDialog.Builder(DeviceActivity.this);
             builder.setTitle("Select Mode:");
             builder.setItems(items, (dialog, item) -> {
-                // Do something with the selection
-//                Toast.makeText(getBaseContext(), "Mode: " + items[item] + "num:" + item, Toast.LENGTH_SHORT)
-//                        .show();
-                //Todo: need preferences to save for MODE
                 editor.putInt(mDevice.getID() + "_mode", item);
                 editor.apply();
                 changeModeBackground(item, modeIcon);
@@ -178,12 +174,10 @@ public class DeviceActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Long subId) {
                 subscriptions.add(subId);
-//                Toaster.l(DeviceActivity.this, "Subscribed to device events successfully.");
             }
 
             @Override
             public void onFailure(ParticleCloudException exception) {
-//                Toaster.l(DeviceActivity.this, "Error subscribing to device events.");
             }
         });
 
