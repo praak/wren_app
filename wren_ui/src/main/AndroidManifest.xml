@@ -33,6 +33,15 @@
             android:name=".DeviceActivity"
             android:label="DeviceActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".SensorActivity"
+            android:label="SensorActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ScheduleActivity"
+            android:label="@string/title_activity_schedule"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
 
         <!--
         All of the following are from the device setup lib, and must be present in your app's
@@ -102,10 +111,7 @@
             android:screenOrientation="portrait"
             android:theme="@style/ParticleSetupTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateVisible" />
-        <activity
-            android:name=".ScheduleActivity"
-            android:label="@string/title_activity_schedule"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+
     </application>
 
 </manifest>

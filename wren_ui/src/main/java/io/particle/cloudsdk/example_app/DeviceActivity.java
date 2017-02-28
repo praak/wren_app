@@ -1,3 +1,4 @@
+
 package io.particle.cloudsdk.example_app;
 
 import android.app.AlertDialog;
@@ -40,6 +41,7 @@ import io.particle.android.sdk.utils.Toaster;
 public class DeviceActivity extends AppCompatActivity {
 
     public static final int WALL_UNIT_TEMP = 100;
+    public static final String TAG = "DeviceActivity";
 
     private final Handler handler = new Handler() {
         @Override
@@ -77,7 +79,6 @@ public class DeviceActivity extends AppCompatActivity {
         mode = (ImageButton) findViewById(R.id.imagebutton_mode);
         setschedule = (ImageButton) findViewById(R.id.imagebutton_setschedule);
 
-
         SharedPreferences pref = getApplicationContext().getSharedPreferences("SharedTemp", 0);
         SharedPreferences.Editor editor = pref.edit();
 
@@ -101,7 +102,8 @@ public class DeviceActivity extends AppCompatActivity {
             numberPicker.setMinValue(40);
             numberPicker.setMaxValue(110);
             // TODO: Grab settings from device instead of shared prefs
-            numberPicker.setValue(Integer.valueOf(pref.getString(mDevice.getID() + "_sharedTemp", "72")));
+            numberPicker.setValue(
+                    Integer.valueOf(pref.getString(mDevice.getID() + "_sharedTemp", "72")));
             numberPicker.setWrapSelectorWheel(false);
 
             alertDialogBuilder.setTitle("Set Temperature");
@@ -112,7 +114,8 @@ public class DeviceActivity extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int id) {
                             int userTemp = numberPicker.getValue();
                             setTemp.setText(userTemp + " \u2109");
-                            editor.putString(mDevice.getID() + "_setTemp", String.valueOf(userTemp));
+                            editor.putString(mDevice.getID() + "_setTemp",
+                                    String.valueOf(userTemp));
                             editor.apply();
                         }
                     })
@@ -127,8 +130,50 @@ public class DeviceActivity extends AppCompatActivity {
             alertDialog.show();
         });
 
+        remotesensors.setOnClickListener(v -> {
+            Async.executeAsync(mDevice,
+                    new Async.ApiWork<ParticleDevice, String>() {
+
+                        public String callApi(
+                                ParticleDevice particleDevice)
+                                throws ParticleCloudException, IOException {
+                            String variable = null;
+                            try {
+                                variable = mDevice
+                                        .getStringVariable("Data");
+                                return variable;
+                            } catch (ParticleDevice.VariableDoesNotExistException e) {
+                                e.printStackTrace();
+                            }
+                            return null;
+                        }
+
+                        @Override
+                        public void onSuccess(String jsonString) {
+                            // TODO: Stop assuming that the data is valid
+                            if (jsonString == null) {
+                                Toaster.s(DeviceActivity.this,
+                                        "Whoopsie daisy, couldn't find your sensors bruh");
+                                return;
+                            }
+                            Intent intent = new Intent(DeviceActivity.this, SensorActivity.class);
+                            intent.putExtra("jsonString", jsonString);
+                            startActivity(intent);
+                        }
+
+                        @Override
+                        public void onFailure(ParticleCloudException e) {
+                            Toaster.s(DeviceActivity.this,
+                                    "Whoopsie daisy, couldn't find your sensors bruh");
+                        }
+
+                    });
+        });
+
         mode.setOnClickListener(v -> {
-            final CharSequence[] items = {"Auto", "Heat", "Cool", "OFF"};
+            final CharSequence[] items = {
+                    "Auto", "Heat", "Cool", "OFF"
+            };
             AlertDialog.Builder builder = new AlertDialog.Builder(DeviceActivity.this);
             builder.setTitle("Select Mode:");
             builder.setItems(items, (dialog, item) -> {
@@ -309,7 +354,7 @@ public class DeviceActivity extends AppCompatActivity {
 
                                             @Override
                                             public void onFailure(ParticleCloudException e) {
-                                                Log.e("some tag",
+                                                Log.e(TAG,
                                                         "Something went wrong making an SDK call: ",
                                                         e);
                                                 Toaster.l(DeviceActivity.this,
@@ -358,7 +403,7 @@ public class DeviceActivity extends AppCompatActivity {
 
                                             @Override
                                             public void onFailure(ParticleCloudException e) {
-                                                Log.e("some tag",
+                                                Log.e(TAG,
                                                         "Something went wrong making an SDK call: ",
                                                         e);
                                                 Toaster.l(DeviceActivity.this,
