@@ -1,9 +1,14 @@
+
 package io.particle.cloudsdk.example_app;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.widget.Button;
+import android.widget.TimePicker;
+import android.widget.ToggleButton;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -19,7 +24,14 @@ public class ScheduleActivity extends AppCompatActivity {
     Button saturday;
     Button sunday;
 
-    int previouslySelectedButton;
+    TimePicker timepickerSchedule;
+    ToggleButton toggleButtonOpenClosed;
+    String toggleButtonTextOn;
+    String toggleButtonTextOff;
+
+    Button currentlySelectedButton;
+
+    SharedPreferences sharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +40,8 @@ public class ScheduleActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+
         monday = (Button) findViewById(R.id.button_monday);
         tuesday = (Button) findViewById(R.id.button_tuesday);
         wednesday = (Button) findViewById(R.id.button_wednesday);
@@ -35,43 +49,33 @@ public class ScheduleActivity extends AppCompatActivity {
         friday = (Button) findViewById(R.id.button_friday);
         saturday = (Button) findViewById(R.id.button_saturday);
         sunday = (Button) findViewById(R.id.button_sunday);
+        timepickerSchedule = (TimePicker) findViewById(R.id.timepicker_schedule);
+        toggleButtonOpenClosed = (ToggleButton) findViewById(R.id.toggle_button_open_closed);
+        toggleButtonTextOn = (String) toggleButtonOpenClosed.getTextOn();
+        toggleButtonTextOff = (String) toggleButtonOpenClosed.getTextOff();
 
-        setButtonForDayOfWeekAsSelected();
-        setupOnClickListeners();
-
-    }
-
-    private void setupOnClickListeners() {
         monday.setOnClickListener(view -> {
-            toggleButtons(monday.getId());
+            toggleButtons(monday);
         });
         tuesday.setOnClickListener(view -> {
-            toggleButtons(tuesday.getId());
+            toggleButtons(tuesday);
         });
         wednesday.setOnClickListener(view -> {
-            toggleButtons(wednesday.getId());
+            toggleButtons(wednesday);
         });
         thursday.setOnClickListener(view -> {
-            toggleButtons(thursday.getId());
+            toggleButtons(thursday);
         });
         friday.setOnClickListener(view -> {
-            toggleButtons(friday.getId());
+            toggleButtons(friday);
         });
         saturday.setOnClickListener(view -> {
-            toggleButtons(saturday.getId());
+            toggleButtons(saturday);
         });
         sunday.setOnClickListener(view -> {
-            toggleButtons(sunday.getId());
+            toggleButtons(sunday);
         });
-    }
 
-    private void toggleButtons(int selectedButton) {
-        findViewById(previouslySelectedButton).setSelected(false);
-        findViewById(selectedButton).setSelected(true);
-        previouslySelectedButton = selectedButton;
-    }
-
-    private void setButtonForDayOfWeekAsSelected() {
         String weekDay;
         SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE", Locale.getDefault());
 
@@ -79,38 +83,75 @@ public class ScheduleActivity extends AppCompatActivity {
         weekDay = dayFormat.format(calendar.getTime()).trim();
 
         if (weekDay.equals("Monday")) {
-            monday.setSelected(true);
-            previouslySelectedButton = monday.getId();
-
+            initializeButtons(monday);
         } else if (weekDay.equals("Tuesday")) {
-            tuesday.setSelected(true);
-            previouslySelectedButton = tuesday.getId();
-
+            initializeButtons(tuesday);
         } else if (weekDay.equals("Wednesday")) {
-            wednesday.setSelected(true);
-            previouslySelectedButton = wednesday.getId();
-
+            initializeButtons(wednesday);
         } else if (weekDay.equals("Thursday")) {
-            thursday.setSelected(true);
-            previouslySelectedButton = thursday.getId();
-
+            initializeButtons(thursday);
         } else if (weekDay.equals("Friday")) {
-            friday.setSelected(true);
-            previouslySelectedButton = friday.getId();
-
+            initializeButtons(friday);
         } else if (weekDay.equals("Saturday")) {
-            saturday.setSelected(true);
-            previouslySelectedButton = saturday.getId();
-
+            initializeButtons(saturday);
         } else if (weekDay.equals("Sunday")) {
-            sunday.setSelected(true);
-            previouslySelectedButton = sunday.getId();
-
+            initializeButtons(sunday);
         } else {
+            // Have we made it to another planet and now have different names for days of the week?
         }
 
+        toggleButtonOpenClosed.setOnCheckedChangeListener((compoundButton, b) -> {
+            setTimePicker(currentlySelectedButton);
+        });
 
+        timepickerSchedule.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
+            @Override
+            public void onTimeChanged(TimePicker timePicker, int hour, int minute) {
+                String toggleButtonText = (toggleButtonOpenClosed.isChecked()
+                        ? toggleButtonTextOn : toggleButtonTextOff);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                int buttonId = currentlySelectedButton.getId();
+                editor.putInt(buttonId + toggleButtonText + "hour", hour);
+                editor.putInt(buttonId + toggleButtonText + "minute", minute);
+                editor.commit();
+            }
+        });
     }
 
+    private void initializeButtons(Button day) {
+        day.setSelected(true);
+        currentlySelectedButton = day;
+        setTimePicker(day);
+    }
 
+    private boolean setTimePicker(Button day) {
+        String toggleButtonText = (toggleButtonOpenClosed.isChecked()
+                ? toggleButtonTextOn : toggleButtonTextOff);
+        int defaultOpenCloseTime = toggleButtonOpenClosed.isChecked() ? 9 : 17;
+        int hour = sharedPref
+                .getInt(String.valueOf(day.getId()) + toggleButtonText + "hour",
+                        defaultOpenCloseTime);
+        int minute = sharedPref.getInt(
+                String.valueOf(day.getId()) + toggleButtonText + "minute", 0);
+        timepickerSchedule.setHour(hour);
+        timepickerSchedule.setMinute(minute);
+        return true;
+    }
+
+    private void toggleButtons(Button selectedButton) {
+        currentlySelectedButton.setSelected(false);
+        selectedButton.setSelected(true);
+        currentlySelectedButton = selectedButton;
+        setTimePicker(selectedButton);
+    }
 }
+// Write
+// SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+// SharedPreferences.Editor editor = sharedPref.edit();
+// editor.putInt(getString(R.string.saved_high_score), newHighScore);
+// editor.commit();
+
+// Read
+// SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+// int defaultValue = getResources().getInteger(R.string.saved_high_score_default);
+// long highScore = sharedPref.getInt(getString(R.string.saved_high_score), defaultValue);
