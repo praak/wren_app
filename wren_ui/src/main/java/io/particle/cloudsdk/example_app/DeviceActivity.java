@@ -34,6 +34,8 @@ import io.particle.android.sdk.cloud.ParticleEventHandler;
 import io.particle.android.sdk.utils.Async;
 import io.particle.android.sdk.utils.Toaster;
 
+import static io.particle.android.sdk.utils.Py.list;
+
 /**
  * Created by charlesscholle on 2/11/17.
  */
@@ -117,6 +119,34 @@ public class DeviceActivity extends AppCompatActivity {
                             editor.putString(mDevice.getID() + "_setTemp",
                                     String.valueOf(userTemp));
                             editor.apply();
+
+                            Async.executeAsync(ParticleCloudSDK.getCloud(),
+                                    new Async.ApiWork<ParticleCloud, Integer>() {
+                                        @Override
+                                        public Integer callApi(@NonNull ParticleCloud ParticleCloud)
+                                                throws ParticleCloudException, IOException {
+                                            try {
+                                                mDevice.callFunction("setTemp",
+                                                        list(String.valueOf(userTemp)));
+                                            } catch (ParticleDevice.FunctionDoesNotExistException e) {
+                                                e.printStackTrace();
+                                            }
+                                            return 1;
+                                        }
+
+                                        @Override
+                                        public void onSuccess(@NonNull Integer val) { // this goes
+                                                                                      // on the main
+                                                                                      // thread
+                                            // get names, post on listview
+                                            Toaster.s(DeviceActivity.this, "Got it to pass!");
+                                        }
+
+                                        @Override
+                                        public void onFailure(@NonNull ParticleCloudException e) {
+                                            e.printStackTrace();
+                                        }
+                                    });
                         }
                     })
                     .setNegativeButton("Cancel", (dialog, id) -> {
